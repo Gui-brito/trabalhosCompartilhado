@@ -1,5 +1,4 @@
 import os
-from types import CellType
 import requests
 import json
 import zipfile
@@ -163,11 +162,14 @@ def sobre():
     cls()
     print('Desenvolvedor:\tOtávio de Mattos Júnior\n'+
         'RA:\t\t2840481813032\n'+
+        'Desenvolvedor:\tGuilherme Moisés de Oliveira Brito\n'+
+        'RA:\t\t2840481813018\n'+
         '\nTema: Busca de endereço.\n'+
         '\nObjetivo: O projeto consiste \n'+
         'em auxiliar o usuário na busca\n'+
         'de um edereço desejado. Por \n'+
         'meio de uma API.\n')
+    continua = input("Pressione Enter para continuar")
 
 def acharEndereco(anotacao):
     while True:           
@@ -281,8 +283,6 @@ def removerUsuarios():
                 cnx.commit()
                 print('Registro deletado com sucesso\n')
                 continua = input("Aperte enter para continuar")
-                
-
 
 cls()
 mensagemBemVindo()
