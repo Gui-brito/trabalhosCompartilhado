@@ -1,9 +1,14 @@
 import os
+from types import CellType
 import requests
 import json
-import zipfile 
+import zipfile
+import mysql.connector
+from mysql.connector.connection import MySQLConnection
+from mysql.connector import errorcode
 
 inicia = True
+admin = False
 
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
@@ -12,15 +17,39 @@ def mensagemBemVindo():
     print('-'*30+'\n'+'-'*30)
     print('-'*10+'Bem vindo!'+'-'*10)
 
+def conexao():
+    try:
+        cnx = MySQLConnection(host='localhost',database='topicosEspeciais',user='root',password='root')
+        return cnx
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Erro ao conectar Database")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Erro Database inexistente")
+        else:
+            print(err)
+        return None
+
+def busca_usuarios():
+    cnx = conexao()
+    cursor = cnx.cursor()
+    cursor.execute("SELECT usuario, senha, user_admin FROM userLogin")
+    lista = []
+    for (usuario, senha, user_admin) in cursor:
+        lista.append({'Login': usuario, 'Senha':senha, "user_admin":user_admin})
+    cnx.close()
+    return lista
+
 def login():
     global inicia
+    global admin
     ver_login = False
     ver_senha = False
-    usuario = [{'Login': 'otavio', 'Senha': '12345'}, 
-            {'Login': 'oivato', 'Senha': '54321'}, 
-            {'Login': 'mattos', 'Senha': '67890'}, 
-            {'Login': 'sottam', 'Senha': '09876'},
-            {'Login': 'guibrito', 'Senha': 'guibs'}]
+    cnx = conexao()
+    if cnx == None:
+        inicia = False
+
+    usuario = busca_usuarios()
 
     #Inicia recebe True para validação OK
     #Inicia recebe False para saida do programa
@@ -55,12 +84,15 @@ def login():
                     print('-'*30)
                 else:
                     ver_senha = True
+                    if usuario[i]['user_admin'] == 1:
+                        admin = True
 
         if (ver_login == True) and (ver_senha==True):
             cls()
             print('-'*30+'\n'+'-'*30)
             print('\tValidação OK!')
             print('-'*30+'\n'+'-'*30)
+        
             break
         
         else:            
@@ -83,11 +115,15 @@ def desenhaMenuPrincipal():
     print('-'*4+'[2] > Ver histórico da pesquisa')
     print('-'*4+'[3] > Exportar lista')
     print('-'*4+'[4] > Importar lista')
+    if(admin==1):
+        print('-'*4+'[5] > Adicionar usuario')
+        print('-'*4+'[6] > Remover usuario')
     print('-'*4+'[9] > Sair')
     print('-'*30+'\n'+'-'*30)
 
 def defineOpicao(opicao):
     global inicia 
+    global admin
     if opicao == '9':
         inicia = False
 
@@ -110,6 +146,15 @@ def defineOpicao(opicao):
     elif opicao == '4':        
         #[4] > Importar lista
         importarLista()
+    
+    elif admin == True and opicao == '5':
+        #[5] > Adicionar usuario
+        adicionarUsuarios()
+
+    elif admin == True and opicao == '6':
+        #[6] > Remover usuario
+        removerUsuarios()
+
 
     else:
         print('Indice inválido.')
@@ -159,12 +204,14 @@ def acharEndereco(anotacao):
             print('Erro dentro da [1] Achar endereço')
 
 def historico(anotacao):
+    cls()
     print('Relatorio----')
     print('Logradouros pesquisados:')
     print(anotacao)
     print('\ntotal de ', len(anotacao)-1, 'logradouros pesquisados')
 
 def exportarLista(anotacao):
+    cls()
     print('exportando lista de endereços')
 
     nome_log = input('Nome do arquivo: ')
@@ -178,6 +225,7 @@ def exportarLista(anotacao):
     pausa = input('Enter pra continuar')
 
 def importarLista():
+    cls()
     print('importando lista de endereços')
     arquivo = input('Digite o nome do arquivo: ')
     with open(f'{arquivo}.json', 'r') as fp:
@@ -192,6 +240,49 @@ def importarLista():
         print('-'*30+'\n')
 
     pausa = input('Enter pra continuar')
+
+def adicionarUsuarios():
+    cls()
+    cnx = conexao()
+    print('Adicionar Usuario:\n\n')
+    user = input("Digite o nome do usuario para adicionar: ")
+    password = input("Digite a senha do usuario: ")
+    user_admin = input("Digite 1 para Super Usuario: ")
+    if(user_admin != '1'):
+        user_admin = 0
+    cursor = cnx.cursor()
+    sql = 'INSERT INTO userLogin (usuario, senha, user_admin) values (%s, %s, %s)'
+    valores = (user, password, user_admin)
+    cursor.execute(sql, valores)
+    cursor.close()
+    cnx.commit()
+    print('Usuario adicionado com sucesso\n')
+    continua = input("Aperte enter para continuar")
+
+def removerUsuarios():
+    cls()
+    cnx = conexao()
+    lista = busca_usuarios()
+    print('Lista dos usuarios cadastrados:\n\n')
+    for i in range(len(lista)):
+        aux = 'Normal'
+        if lista[i]['user_admin'] == 1:
+            aux = 'Admin'
+        print(('#{0} - {1} - {2}').format(i,lista[i]['Login'],aux))
+    deleteUser = input('Digite o nome do usuario que quer deletar: ')
+    for i in range(len(lista)):
+        if(lista[i]['Login'] == deleteUser):
+            sql = ("DELETE FROM userLogin WHERE usuario='{0}'").format(deleteUser)
+            cursor = cnx.cursor()
+            cursor.execute(sql)
+            cursor.close()
+            certeza = input("Digite Y para confirmar a exclusão: ")
+            if (certeza == 'Y'):
+                cnx.commit()
+                print('Registro deletado com sucesso\n')
+                continua = input("Aperte enter para continuar")
+                
+
 
 cls()
 mensagemBemVindo()
