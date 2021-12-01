@@ -106,6 +106,7 @@ def login():
             print('-'*30+'\n'+'-'*30)
 
 def desenhaMenuPrincipal():
+    cls()
     print('-'*13+'Menu'+'-'*13)
     print('-'*30+'\n'+'-'*30)
     print('-'*4+'Escolha uma opição abaixo:')
@@ -188,7 +189,10 @@ def acharEndereco(anotacao):
             cep = input('Digite o cep sendo\noito digitos seguidos:')
             req = requests.get(f'https://viacep.com.br/ws/{cep}/json/')
             anotacao.append(req.json())
+            cls()
+            print(req.json())
             print('-'*30+'\n'+'-'*30)                                          
+            pausa = input('Enter pra continuar')
 
         elif opicao1 == '1':
             #[1] > Logradouro                
@@ -198,8 +202,11 @@ def acharEndereco(anotacao):
             logradouro = input('Digite o Logradouro:')
             req = requests.get(f'https://viacep.com.br/ws/{estado}/{cidade}/{logradouro}/json/')
             anotacao += req.json()
+            cls()
+            print(req.json())
             print('-'*30+'\n'+'-'*30)
-            print('\n')                
+            print('\n')      
+            pausa = input('Enter pra continuar')          
         elif opicao1 == '9':
             break                
         else:
@@ -211,6 +218,7 @@ def historico(anotacao):
     print('Logradouros pesquisados:')
     print(anotacao)
     print('\ntotal de ', len(anotacao)-1, 'logradouros pesquisados')
+    pausa = input('Enter pra continuar')
 
 def exportarLista(anotacao):
     cls()
