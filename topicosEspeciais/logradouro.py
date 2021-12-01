@@ -8,6 +8,7 @@ from mysql.connector import errorcode
 
 inicia = True
 admin = False
+login = None
 
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
@@ -42,6 +43,7 @@ def busca_usuarios():
 def login():
     global inicia
     global admin
+    global login
     ver_login = False
     ver_senha = False
     cnx = conexao()
