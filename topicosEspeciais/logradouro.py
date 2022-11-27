@@ -232,7 +232,12 @@ def exportarLista(anotacao):
         json.dump(anotacao, fp)
 
     zi = zipfile.ZipFile(f'{nome_log}_{login}.zip','w', zipfile.ZIP_DEFLATED)
+<<<<<<< HEAD
     zi.write('./logradouros.json')
+=======
+    aux = f'{nome_log}.json'
+    zi.write(aux)
+>>>>>>> 14ad0e59feafbe0280620aae3dad1b54cddc6a97
 
     pausa = input('Enter pra continuar')
 
